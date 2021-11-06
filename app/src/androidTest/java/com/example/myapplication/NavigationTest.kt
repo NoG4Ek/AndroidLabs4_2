@@ -2,15 +2,15 @@ package com.example.myapplication
 
 
 import android.content.pm.ActivityInfo
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.core.app.launchActivity
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.contrib.DrawerActions
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -24,160 +24,211 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NavigationTest {
     @get:Rule
-    val activityRule = ActivityScenarioRule(MainActivity::class.java)
+    val scenarioRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun checkBackStack() {
-        tryToConfuseBackStack()
-        openAbout()
-
-        checkAbout()
-
-        pressBack()
-
-        checkSecondFragment()
-
-        onView(withId(R.id.bnToThird)).perform(click())
-        openAbout()
-        checkAbout()
-
-        pressBack()
-
-        checkThirdFragment()
-
-        pressBack()
-
-        checkSecondFragment()
-
-        pressBack()
+    fun simpleDisplayTest() {
+        launchActivity<MainActivity>()
+        Thread.sleep(1000)
 
         checkFirstFragment()
-    }
-
-    @Test
-    fun checkFragmentsDisplay() {
-        checkFirstFragment()
-
         onView(withId(R.id.bnToSecond)).perform(click())
-
         checkSecondFragment()
-
         onView(withId(R.id.bnToThird)).perform(click())
-
         checkThirdFragment()
-
         openAbout()
-
         checkAbout()
     }
 
     @Test
-    fun checkNavigation() {
+    fun backStackTestBack() {
+        tryToConfuseBackStack(1)
+        checkFirstFragment()
+        openAbout()
+        checkAbout()
+        pressBackAfterAbout()
         checkFirstFragment()
 
-        openAbout()
-
-        checkAbout()
-
-        pressBack()
-
         onView(withId(R.id.bnToSecond)).perform(click())
-
+        checkSecondFragment()
+        openAbout()
+        checkAbout()
+        pressBackAfterAbout()
         checkSecondFragment()
 
+        onView(withId(R.id.bnToThird)).perform(click())
+        checkThirdFragment()
         openAbout()
-
         checkAbout()
+        pressBackAfterAbout()
+        checkThirdFragment()
 
         pressBack()
+        checkSecondFragment()
+
+        pressBack()
+        checkFirstFragment()
+
+        try {
+            pressBack()
+            assert(false)
+        } catch (NoActivityResumedException: Exception) {
+            assert(true)
+        }
+    }
+
+    @Test
+    fun backStackTestUp() {
+        tryToConfuseBackStack(1)
+        checkFirstFragment()
+        openAbout()
+        checkAbout()
+        pressBackAfterAbout()
+        checkFirstFragment()
+
+        onView(withId(R.id.bnToSecond)).perform(click())
+        checkSecondFragment()
+        openAbout()
+        checkAbout()
+        pressBackAfterAbout()
+        checkSecondFragment()
 
         onView(withId(R.id.bnToThird)).perform(click())
-
         checkThirdFragment()
-
         openAbout()
-
         checkAbout()
-
-        pressBack()
-
+        pressBackAfterAbout()
         checkThirdFragment()
+
+        onView(withId(R.id.bnToSecond)).perform(click())
+        checkSecondFragment()
 
         onView(withId(R.id.bnToFirst)).perform(click())
-
         checkFirstFragment()
+
+        try {
+            pressBack()
+            assert(false)
+        } catch (NoActivityResumedException: Exception) {
+            assert(true)
+        }
     }
 
     @Test
-    fun checkRotationScreen() {
-
-        // first fragment
+    fun rotationScreenTestSimple() {
         checkFirstFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
-
+        Thread.sleep(1000)
         checkFirstFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        Thread.sleep(1000)
+        checkFirstFragment()
 
         onView(withId(R.id.bnToSecond)).perform(click())
-
-        // second fragment
         checkSecondFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
-
+        Thread.sleep(1000)
         checkSecondFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        Thread.sleep(1000)
+        checkSecondFragment()
 
         onView(withId(R.id.bnToThird)).perform(click())
-
-        // third fragment
         checkThirdFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
-
+        Thread.sleep(1000)
         checkThirdFragment()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        Thread.sleep(1000)
+        checkThirdFragment()
 
         openAbout()
-
         checkAbout()
-
-        activityRule.scenario.onActivity { activity ->
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
+        Thread.sleep(1000)
+        checkAbout()
+        scenarioRule.scenario.onActivity { activity ->
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+        Thread.sleep(1000)
+        checkAbout()
+    }
 
+    @Test
+    fun rotationScreenTestInOne() {
+        onView(withId(R.id.bnToSecond)).perform(click())
+        onView(withId(R.id.bnToThird)).perform(click())
+
+        openAbout()
+        checkAbout()
+        scenarioRule.scenario.onActivity { activity ->
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        Thread.sleep(1000)
         checkAbout()
 
-        activityRule.scenario.onActivity { activity ->
+        pressBackAfterAbout()
+        checkThirdFragment()
+        scenarioRule.scenario.onActivity { activity ->
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+        Thread.sleep(1000)
+        checkThirdFragment()
+        scenarioRule.scenario.onActivity { activity ->
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        Thread.sleep(1000)
+        checkThirdFragment()
+
+        pressBack()
+        pressBack()
+        checkFirstFragment()
+        openAbout()
+        checkAbout()
+        scenarioRule.scenario.onActivity { activity ->
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+        Thread.sleep(1000)
+        pressBackAfterAbout()
+        checkFirstFragment()
+    }
+
+    private fun tryToConfuseBackStack(last: Int) {
+        onView(withId(R.id.bnToSecond)).perform(click())
+        onView(withId(R.id.bnToThird)).perform(click())
+        onView(withId(R.id.bnToFirst)).perform(click())
+        onView(withId(R.id.bnToSecond)).perform(click())
+        onView(withId(R.id.bnToFirst)).perform(click())
+        onView(withId(R.id.bnToSecond)).perform(click())
+        onView(withId(R.id.bnToThird)).perform(click())
+        onView(withId(R.id.bnToSecond)).perform(click())
+        openAbout()
+        pressBackAfterAbout()
+        onView(withId(R.id.bnToThird)).perform(click())
+        pressBack()
+        when(last){
+            1 -> onView(withId(R.id.bnToFirst)).perform(click())
+            3 -> onView(withId(R.id.bnToThird)).perform(click())
         }
     }
 
-    private fun tryToConfuseBackStack() {
-        onView(withId(R.id.bnToSecond)).perform(click())
-        onView(withId(R.id.bnToThird)).perform(click())
-        onView(withId(R.id.bnToFirst)).perform(click())
-        onView(withId(R.id.bnToSecond)).perform(click())
-        onView(withId(R.id.bnToFirst)).perform(click())
-        onView(withId(R.id.bnToSecond)).perform(click())
-        onView(withId(R.id.bnToThird)).perform(click())
-        onView(withId(R.id.bnToSecond)).perform(click())
+    private fun pressBackAfterAbout() {
+        pressBack()
+        onView(withId(R.id.drawer_layout)).perform(DrawerActions.close())
     }
 
     private fun checkFirstFragment(){
