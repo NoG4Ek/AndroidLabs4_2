@@ -79,39 +79,18 @@ class NavigationTest {
 
     @Test
     fun backStackTestUp() {
-        tryToConfuseBackStack(1)
-        checkFirstFragment()
-        openAbout()
-        checkAbout()
-        pressBackAfterAbout()
-        checkFirstFragment()
-
-        onView(withId(R.id.bnToSecond)).perform(click())
-        checkSecondFragment()
-        openAbout()
-        checkAbout()
-        pressBackAfterAbout()
-        checkSecondFragment()
-
-        onView(withId(R.id.bnToThird)).perform(click())
+        tryToConfuseBackStack(3)
         checkThirdFragment()
         openAbout()
         checkAbout()
-        pressBackAfterAbout()
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(click())
         checkThirdFragment()
 
-        onView(withId(R.id.bnToSecond)).perform(click())
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(click())
         checkSecondFragment()
 
-        onView(withId(R.id.bnToFirst)).perform(click())
+        onView(withContentDescription(R.string.nav_app_bar_navigate_up_description)).perform(click())
         checkFirstFragment()
-
-        try {
-            pressBack()
-            assert(false)
-        } catch (NoActivityResumedException: Exception) {
-            assert(true)
-        }
     }
 
     @Test
